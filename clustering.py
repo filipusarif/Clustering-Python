@@ -42,6 +42,7 @@ header_info = [
 ]
 X.columns = header_info
 
+# X_DBSCAN = X[["Profile_mean",'Profile_stdev',"DM_mean",'DM_stdev']]
 X_DBSCAN = X.copy()
 
 # Handling the missing values
@@ -102,164 +103,55 @@ def bar(labels, counts):
   plt.xticks(labels)  # Set x-ticks sesuai dengan label yang unik
   plt.show()
 
-# cluster = 2
-ac2 = AgglomerativeClustering(n_clusters = 2)
-agglomerative_labels = ac2.fit_predict(X_principal)
-agglomerative_score = silhouette_score(X_principal, agglomerative_labels)
+agglo_labels = []
+agglo_dbIndex = []
 
-X_principal["Clusters"] = agglomerative_labels
-#Adding the Clusters feature to the orignal dataframe.
-X["Clusters"] = agglomerative_labels
+for cluster in range(2,7):
+  print("Cluster ", cluster)
+  ac2 = AgglomerativeClustering(n_clusters = cluster)
+  agglomerative_labels = ac2.fit_predict(X_principal)
+  agglomerative_score = silhouette_score(X_principal, agglomerative_labels)
+  agglo_labels.append(agglomerative_labels)
+  # Visualizing the clustering
+  plt.figure(figsize =(6, 6))
+  plt.scatter(X_principal['P1'], X_principal['P2'],
+            c = agglomerative_labels, cmap ='rainbow')
+  plt.show()
 
-# Visualizing the clustering
-plt.figure(figsize =(6, 6))
-plt.scatter(X_principal['P1'], X_principal['P2'],
-           c = agglomerative_labels, cmap ='rainbow')
-plt.show()
+  # Menghitung Davies-Bouldin Index
+  db_index = davies_bouldin_score(X_principal, agglomerative_labels)
+  agglo_dbIndex.append(db_index)
+  print("Davies-Bouldin Index:", db_index)
 
-# Menghitung jumlah kemunculan setiap label
-unique_labels, counts = np.unique(agglomerative_labels, return_counts=True)
+  # Menghitung jumlah kemunculan setiap label
+  unique_labels, counts = np.unique(agglomerative_labels, return_counts=True)
+  bar(unique_labels,counts)
 
-bar(unique_labels,counts)
+  # Menghitung Variance untuk setiap cluster
+  variance_list = []
+  for label in unique_labels:
+      cluster_points = X_principal[agglomerative_labels == label]
+      centroid = cluster_points.mean(axis=0)
+      variance = np.mean(np.sum((cluster_points - centroid) ** 2, axis=1))
+      variance_list.append(variance)
 
-# Menghitung pusat cluster (centroid) untuk setiap cluster
-centroids = []
-for label in np.unique(agglomerative_labels):
-    centroids.append(X_principal[agglomerative_labels == label].mean(axis=0))
-
-# Menghitung Within-Cluster Sum of Squares (WCSS)
-wcss = 0
-for label, centroid in zip(np.unique(agglomerative_labels), centroids):
-    wcss += np.sum((X_principal[agglomerative_labels == label] - centroid) ** 2)
-
-print("Within-Cluster Sum of Squares (WCSS):\n", wcss)
-
-# cluster = 3
-ac3 = AgglomerativeClustering(n_clusters = 3)
-agglomerative_labels3 = ac3.fit_predict(X_principal)
-agglomerative_score3 = silhouette_score(X_principal, agglomerative_labels3)
-
-plt.figure(figsize =(6, 6))
-plt.scatter(X_principal['P1'], X_principal['P2'],
-           c = agglomerative_labels3, cmap ='rainbow')
-plt.show()
-
-# Menghitung jumlah kemunculan setiap label
-unique_labels3, counts3 = np.unique(agglomerative_labels3, return_counts=True)
-bar(unique_labels3, counts3)
-
-# Menghitung pusat cluster (centroid) untuk setiap cluster
-centroids3 = []
-for label in np.unique(agglomerative_labels3):
-    centroids3.append(X_principal[agglomerative_labels3 == label].mean(axis=0))
-
-# Menghitung Within-Cluster Sum of Squares (WCSS)
-wcss = 0
-for label, centroid in zip(np.unique(agglomerative_labels3), centroids3):
-    wcss += np.sum((X_principal[agglomerative_labels3 == label] - centroid) ** 2)
-
-print("Within-Cluster Sum of Squares (WCSS):\n", wcss)
-
-# cluster = 4
-ac4 = AgglomerativeClustering(n_clusters = 4)
-agglomerative_labels4 = ac4.fit_predict(X_principal)
-agglomerative_score4 = silhouette_score(X_principal, agglomerative_labels4)
-
-plt.figure(figsize =(6, 6))
-plt.scatter(X_principal['P1'], X_principal['P2'],
-           c = agglomerative_labels4, cmap ='rainbow')
-plt.show()
-
-# Menghitung jumlah kemunculan setiap label
-unique_labels4, counts4 = np.unique(agglomerative_labels4, return_counts=True)
-bar(unique_labels4, counts4)
-
-# Menghitung pusat cluster (centroid) untuk setiap cluster
-centroids4 = []
-for label in np.unique(agglomerative_labels4):
-    centroids4.append(X_principal[agglomerative_labels4 == label].mean(axis=0))
-
-# Menghitung Within-Cluster Sum of Squares (WCSS)
-wcss = 0
-for label, centroid in zip(np.unique(agglomerative_labels4), centroids4):
-    wcss += np.sum((X_principal[agglomerative_labels4 == label] - centroid) ** 2)
-
-print("Within-Cluster Sum of Squares (WCSS):\n", wcss)
-
-# cluster = 5
-ac5 = AgglomerativeClustering(n_clusters = 5)
-agglomerative_labels5 = ac5.fit_predict(X_principal)
-agglomerative_score5 = silhouette_score(X_principal, agglomerative_labels5)
-
-plt.figure(figsize =(6, 6))
-plt.scatter(X_principal['P1'], X_principal['P2'],
-           c = agglomerative_labels5, cmap ='rainbow')
-plt.show()
-
-# Menghitung jumlah kemunculan setiap label
-unique_labels5, counts5 = np.unique(agglomerative_labels5, return_counts=True)
-bar(unique_labels5, counts5)
-
-# Menghitung pusat cluster (centroid) untuk setiap cluster
-centroids5 = []
-for label in np.unique(agglomerative_labels5):
-    centroids5.append(X_principal[agglomerative_labels5 == label].mean(axis=0))
-
-# Menghitung Within-Cluster Sum of Squares (WCSS)
-wcss = 0
-for label, centroid in zip(np.unique(agglomerative_labels5), centroids5):
-    wcss += np.sum((X_principal[agglomerative_labels5 == label] - centroid) ** 2)
-
-print("Within-Cluster Sum of Squares (WCSS):\n", wcss)
-
-# cluster = 6
-ac6 = AgglomerativeClustering(n_clusters = 6)
-agglomerative_labels6 = ac6.fit_predict(X_principal)
-agglomerative_score6 = silhouette_score(X_principal, agglomerative_labels6)
-
-plt.figure(figsize =(6, 6))
-plt.scatter(X_principal['P1'], X_principal['P2'],
-           c = agglomerative_labels6, cmap ='rainbow')
-plt.show()
-
-
-
-# Menghitung jumlah kemunculan setiap label
-unique_labels6, counts6 = np.unique(agglomerative_labels6, return_counts=True)
-bar(unique_labels6, counts6)
-
-# Menghitung pusat cluster (centroid) untuk setiap cluster
-centroids6 = []
-for label in np.unique(agglomerative_labels6):
-    centroids6.append(X_principal[agglomerative_labels6 == label].mean(axis=0))
-
-# Menghitung Within-Cluster Sum of Squares (WCSS)
-wcss = 0
-for label, centroid in zip(np.unique(agglomerative_labels6), centroids6):
-    wcss += np.sum((X_principal[agglomerative_labels6 == label] - centroid) ** 2)
-
-print("Within-Cluster Sum of Squares (WCSS):\n", wcss)
-
-AGG_clustered = X_principal.copy()
-AGG_clustered.loc[:,'Cluster'] = agglomerative_labels6 # menggabungkan label ke DF
-AGG_clust_sizes = AGG_clustered.groupby('Cluster').size().to_frame()
-AGG_clust_sizes.columns = ["AGG_size"]
-AGG_clust_sizes
+  print(f'Variance for {cluster} clusters: {variance_list}')
+  print(f'Average Variance: {np.mean(variance_list)}')
 
 k = [2, 3, 4, 5, 6]
 
 # menggabungkan silhouette score setiap cluster
 silhouette_scores = []
 silhouette_scores.append(
-        silhouette_score(X_principal, agglomerative_labels))
+        silhouette_score(X_principal, agglo_labels[0]))
 silhouette_scores.append(
-        silhouette_score(X_principal, agglomerative_labels3))
+        silhouette_score(X_principal, agglo_labels[1]))
 silhouette_scores.append(
-        silhouette_score(X_principal, agglomerative_labels4))
+        silhouette_score(X_principal, agglo_labels[2]))
 silhouette_scores.append(
-        silhouette_score(X_principal, agglomerative_labels5))
+        silhouette_score(X_principal, agglo_labels[3]))
 silhouette_scores.append(
-        silhouette_score(X_principal, agglomerative_labels6))
+        silhouette_score(X_principal, agglo_labels[4]))
 
 # Plotting graph untuk membandingkan cluster n 2-6
 plt.bar(k, silhouette_scores)
@@ -268,6 +160,21 @@ plt.ylabel('S(i)', fontsize = 20)
 plt.show()
 
 print("Agglomerative Silhouette Score : ",silhouette_scores)
+
+# Plotting graph untuk membandingkan cluster n 2-6
+plt.bar(k, agglo_dbIndex)
+plt.xlabel('Number of clusters', fontsize = 20)
+plt.ylabel('DB Index', fontsize = 20)
+plt.show()
+
+# X_principal["Clusters"] = agglomerative_labels
+# #Adding the Clusters feature to the orignal dataframe.
+# X["Clusters"] = agglomerative_labels
+AGG_clustered = X_principal.copy()
+AGG_clustered.loc[:,'Cluster'] = agglo_labels[1] # menggabungkan label ke DF
+AGG_clust_sizes = AGG_clustered.groupby('Cluster').size().to_frame()
+AGG_clust_sizes.columns = ["AGG_size"]
+AGG_clust_sizes
 
 # Calculate F-measure using 'macro' average
 f_measure_weighted_agglo = f1_score(ground_truth_labels, agglomerative_labels, average='weighted')
@@ -292,15 +199,40 @@ min_samples = np.arange(3,10) # min_samples values to be investigated
 
 DBSCAN_params = list(product(eps_values, min_samples))
 
+# from sklearn.metrics import silhouette_score
+
+# no_of_clusters = []
+# sil_score = []
+
+# for p in DBSCAN_params:
+#     DBS_clustering = DBSCAN(eps=p[0], min_samples=p[1]).fit(X_DBSCAN)
+#     no_of_clusters.append(len(np.unique(DBS_clustering.labels_)))
+#     sil_score.append(silhouette_score(X_DBSCAN, DBS_clustering.labels_))
+
+from sklearn.metrics import davies_bouldin_score
 from sklearn.metrics import silhouette_score
 
 no_of_clusters = []
 sil_score = []
+db_index = []
 
 for p in DBSCAN_params:
+    # Melakukan clustering dengan DBSCAN
     DBS_clustering = DBSCAN(eps=p[0], min_samples=p[1]).fit(X_DBSCAN)
+
+    # Menghitung jumlah cluster
     no_of_clusters.append(len(np.unique(DBS_clustering.labels_)))
+
+    # Menghitung Silhouette Score
     sil_score.append(silhouette_score(X_DBSCAN, DBS_clustering.labels_))
+
+    # Menghitung Davies-Bouldin Index
+    db_index.append(davies_bouldin_score(X_DBSCAN, DBS_clustering.labels_))
+
+# Menampilkan hasil evaluasi
+print("Jumlah Cluster:", no_of_clusters)
+print("Silhouette Score:", sil_score)
+print("Davies-Bouldin Index:", db_index)
 
 tmp = pd.DataFrame.from_records(DBSCAN_params, columns =['Eps', 'Min_samples'])
 tmp['No_of_clusters'] = no_of_clusters
@@ -323,6 +255,51 @@ plt.show()
 
 DBS_clustering = DBSCAN(eps=12.25, min_samples=5).fit(X_DBSCAN)
 
+# Menghitung indeks Davies-Bouldin
+davies_bouldin = davies_bouldin_score(X_DBSCAN, DBS_clustering.labels_)
+
+print("Indeks Davies-Bouldin:", davies_bouldin)
+
+# Menghitung jumlah kemunculan setiap label
+unique_labels_dbscan, counts_dbscan = np.unique(DBS_clustering.labels_, return_counts=True)
+bar(unique_labels_dbscan,counts_dbscan)
+
+# Menghitung Variance untuk setiap cluster
+variance_dbscan_list = []
+for label in unique_labels_dbscan:
+    cluster_points = X_DBSCAN[DBS_clustering.labels_ == label]
+    centroid = cluster_points.mean(axis=0)
+    variance = np.mean(np.sum((cluster_points - centroid) ** 2, axis=1))
+    variance_dbscan_list.append(variance)
+
+print(f'Variance for {cluster} clusters: {variance_dbscan_list}')
+print(f'Average Variance: {np.mean(variance_dbscan_list)}')
+
+dbscan = DBSCAN(eps=12.25, min_samples=5)
+dbscan.fit(X_DBSCAN)
+
+# Get cluster labels
+labels = dbscan.labels_
+
+# Number of clusters in labels, ignoring noise if present.
+n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+
+# Print number of clusters
+print('Estimated number of clusters: %d' % n_clusters_)
+
+# Print number of noise points
+n_noise_ = list(labels).count(-1)
+print('Estimated number of noise points: %d' % n_noise_)
+
+# Calculate density of each cluster
+for cluster_label in set(labels):
+    if cluster_label != -1:
+        cluster_points = X[labels == cluster_label]
+        centroid = np.mean(cluster_points, axis=0)
+        variance = np.var(cluster_points, axis=0)
+        density = len(cluster_points) / np.prod(variance)
+        print('Cluster', cluster_label, '- Density:', density)
+
 DBSCAN_clustered = X_DBSCAN.copy()
 DBSCAN_clustered.loc[:,'Cluster'] = DBS_clustering.labels_ # menggabungkan label ke DF
 dbscan_score = silhouette_score(X_DBSCAN, DBS_clustering.labels_)
@@ -337,7 +314,7 @@ outliers = DBSCAN_clustered[DBSCAN_clustered['Cluster']==-1]
 fig2, (axes) = plt.subplots(1,2,figsize=(12,5))
 
 
-sns.scatterplot(x='Profile_mean', y='DM_mean',
+sns.scatterplot(x='Profile_mean', y='Profile_skewness',
                 data=DBSCAN_clustered[DBSCAN_clustered['Cluster']!=-1],
                 hue='Cluster', ax=axes[0], palette='Set1', legend='full', s=45)
 
@@ -345,7 +322,7 @@ sns.scatterplot(x='Profile_skewness', y='Profile_kurtosis',
                 data=DBSCAN_clustered[DBSCAN_clustered['Cluster']!=-1],
                 hue='Cluster', palette='Set1', ax=axes[1], legend='full', s=45)
 
-axes[0].scatter(outliers['Profile_mean'], outliers['DM_mean'], s=5, label='outliers', c="k")
+axes[0].scatter(outliers['Profile_mean'], outliers['Profile_skewness'], s=5, label='outliers', c="k")
 axes[1].scatter(outliers['Profile_skewness'], outliers['Profile_kurtosis'], s=5, label='outliers', c="k")
 axes[0].legend()
 axes[1].legend()
